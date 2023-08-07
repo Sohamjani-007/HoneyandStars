@@ -1,0 +1,107 @@
+1) Download the PostgreSQL installer for macOS or Windows at https://www.postgresql.org/download/
+2) pip install psycopg2-binary==2.9.6
+    i) sudo service postgresql start
+    ii) sudo su - postgres
+3) psql
+4) CREATE USER blog WITH PASSWORD 'xxxxxx';
+For our project --> postgres=# CREATE USER blog WITH PASSWORD 'honeyandstars';
+NOTE : Replace xxxxxx with your desired password and execute the command. You will see the following -->
+output:
+CREATE ROLE
+
+5) CREATE DATABASE blog OWNER blog ENCODING 'UTF8';
+output:
+CREATE DATABASE
+
+for exiting psql is \q
+To logout from postgres@soham-ThinkPad-T470s-W10DG:~$  Crl + D
+
+--------------------------------------------------------------
+We have successfully created the PostgreSQL user and database.
+--------------------------------------------------------------
+
+Dumping the existing data
+1) python manage.py dumpdata --help
+2) python manage.py dumpdata --indent=2 --output=mysite_data.json
+output:
+[...........................................................................]
+
+We will now switch the database in the Django project and then we will import the data into the new
+database. Do following in settings.py.
+
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': 'honeyandstars',
+        'USER': 'myblogapp',
+        'PASSWORD': 'honeyandstars',
+        'HOST': 'localhost',
+        'PORT': '',
+    }
+}
+
+If the above method doesn't work : Go to this link and follow procedure.
+https://www.digitalocean.com/community/tutorials/how-to-use-postgresql-with-your-django-application-on-ubuntu-20-04
+
+
+How to resolve the following if migrate doesn't happen:
+Follow the Steps shown below in psql:
+soham@soham-ThinkPad-T470s-W10DG:~$ sudo -u postgres psql
+psql (15.2 (Ubuntu 15.2-1.pgdg20.04+1))
+Type "help" for help.
+
+postgres=# CREATE DATABASE honeyandstars;
+CREATE DATABASE
+postgres=# CREATE USER myblogapp WITH PASSWORD 'honeyandstars';
+CREATE ROLE
+postgres=# ALTER ROLE myprojectuser SET client_encoding TO 'utf8';
+ERROR:  role "myprojectuser" does not exist
+postgres=# ALTER ROLE myprojectuser SET default_transaction_isolation TO 'read committed';
+ERROR:  role "myprojectuser" does not exist
+postgres=# ALTER ROLE myblogapp SET client_encoding TO 'utf8';
+ALTER ROLE
+postgres=# ALTER ROLE myprojectuser SET default_transaction_isolation TO 'read committed';
+ERROR:  role "myprojectuser" does not exist
+postgres=# ALTER ROLE myblogapp SET default_transaction_isolation TO 'read committed';
+ALTER ROLE
+postgres=# ALTER ROLE myprojectuser SET timezone TO 'UTC';
+ERROR:  role "myprojectuser" does not exist
+postgres=# ALTER ROLE myblogapp SET timezone TO 'UTC';
+ALTER ROLE
+postgres=# GRANT ALL PRIVILEGES ON DATABASE honeyandstars TO myblogapp;
+GRANT
+postgres=# GRANT ALL ON SCHEMA public TO myblogapp;
+GRANT
+postgres=# GRANT ALL ON SCHEMA public TO public;
+GRANT
+postgres=# GRANT ALL ON DATABASE honeyandstars TO myblogapp;
+GRANT
+postgres=# ALTER DATABASE honeyandstars OWNER TO myblogapp;
+ALTER DATABASE
+postgres=# GRANT USAGE, CREATE ON SCHEMA PUBLIC TO myblogapp;
+GRANT
+postgres=#\q
+Crl+D
+
+python manage.py dumpdata --indent=2 --output=myblogapp_data.json
+-----------------OR---------------------------
+python -Xutf8 manage.py dumpdata --indent=2 --output=myblogapp_data.json
+
+python manage.py loaddata myblogapp_data.json
+
+
+
+-----------------------------------------NOTE-----------------------------------------------------
+Searching with trigram similarity
+Another search approach is trigram similarity. A trigram is a group of three consecutive characters.
+Example - If you search for yango accidentally It will show results for Django. Here ango is three consecutive.
+You can measure the similarity of two strings by counting the number of trigrams that they share.
+This approach turns out to be very effective for measuring the similarity of words in many languages.
+To use trigrams in PostgreSQL, you will need to install the pg_trgm extension first. Execute the following command in the shell prompt to connect to your database:
+sudo service postgresql start
+sudo su - postgres
+psql honeyandstars
+Then, execute the following command to install the pg_trgm extension:
+CREATE EXTENSION pg_trgm;
+You will get the following output:
+CREATE EXTENSION
