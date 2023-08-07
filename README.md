@@ -29,6 +29,8 @@
 
 ***
 ***
+## PROJECT DESCRIPTION:
+
 Blog Application : Create a complete blog application
 
 1. Build data models, views, and URLs.
